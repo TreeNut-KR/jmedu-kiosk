@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function useCheckEndpointInterval(
-  intervalMs: number = 15000,
-  timeoutMs: number = 3000,
+export default function useCheckAPIInterval(
+  intervalMs: number,
+  timeoutMs: number,
 ) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(false);
@@ -17,7 +17,7 @@ export default function useCheckEndpointInterval(
 
       try {
         setIsLoading(true);
-        await fetch(`${window.APP_CONFIG.HOST}:${window.APP_CONFIG.PORT}`, {
+        await fetch(`${window.APP_CONFIG.API_URL}`, {
           method: "GET",
           signal: controller.signal,
         });

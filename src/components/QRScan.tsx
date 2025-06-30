@@ -12,21 +12,24 @@ import {
 import useSerial from "@/hooks/useSerial";
 import useMultiClick from "@/hooks/useMultiClick";
 import useSerialReader from "@/hooks/useSerialReader";
-import useCheckEndpointInterval from "@/hooks/useCheckEndpointInterval";
+import useCheckAPIInterval from "@/hooks/useCheckAPIInterval";
 import { usePortStore, useViewStore } from "@/store";
 import { cn } from "@/utils/shadcn";
 import z from "zod/v4";
 import useFullscreen from "@/hooks/useFullscreen";
 
 export default function QRScan() {
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const { setView } = useViewStore();
   const { port } = usePortStore();
   const { connect } = useSerial();
   const { theme, toggleTheme } = useTheme();
   const { toggleFullscreen } = useFullscreen();
-  const { isLoading, isOnline } = useCheckEndpointInterval(15000, 3000);
-
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { isLoading, isOnline } = useCheckAPIInterval(
+    window.APP_CONFIG.API_CHECK_INTERVAL_MILLISECONDS,
+    window.APP_CONFIG.API_TIMEOUT_MILLISECONDS,
+  );
 
   const handleSettingBtn = useMultiClick(() => connect());
   const handleFullscreenBtn = useMultiClick(() => toggleFullscreen());
@@ -53,20 +56,20 @@ export default function QRScan() {
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        window.APP_CONFIG.API_TIMEOUT_MILLISECONDS,
+      );
 
       try {
-        const res = await fetch(
-          `${window.APP_CONFIG.HOST}:${window.APP_CONFIG.PORT}/qr`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ qr_data }),
-            signal: controller.signal,
+        const res = await fetch(`${window.APP_CONFIG.API_URL}/qr`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({ qr_data }),
+          signal: controller.signal,
+        });
 
         clearTimeout(timeoutId);
 

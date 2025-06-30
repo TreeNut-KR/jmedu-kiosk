@@ -13,7 +13,9 @@ interface ResultProps {
 export default function Result(props: ResultProps) {
   const { setView } = useViewStore();
 
-  const count = useCountdown(3, () => setView(<QRScan />));
+  const count = useCountdown(window.APP_CONFIG.RESULT_COUNTDOWN_SECONDS, () =>
+    setView(<QRScan />),
+  );
 
   return (
     <section className="animate-fadein bg-adaptiveBackground flex h-full w-full flex-col justify-between p-9">

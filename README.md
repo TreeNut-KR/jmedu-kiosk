@@ -56,13 +56,15 @@ graph LR
 
 <!-- prettier-ignore-start -->
 ```js
-window.APP_CONFIG = {
-  HOST: "http://192.168.1.1", // 등원 API 서버 주소
-  PORT: 8100,                 // 등원 API 서버 포트
-  WIDTH: 600,                 // 가로 해상도
-  HEIGHT: 1024,               // 세로 해상도
-  IS_SCREEN_ROTATE: false,    // 화면 회전 여부
-  THEME: "light",             // "light" or "dark"
+window.APP_CONFIG = {  
+  API_URL: "http://192.168.1.1:8100",     // 등원 API 서버 URL
+  API_TIMEOUT_MILLISECONDS: 3000,         // API 응답 타임아웃(밀리초)
+  API_CHECK_INTERVAL_MILLISECONDS: 15000, // API 확인 간격(밀리초)
+  WIDTH: 600,                             // 가로 해상도
+  HEIGHT: 1024,                           // 세로 해상도
+  IS_SCREEN_ROTATE: false,                // 화면 회전 여부
+  THEME: "light",                         // "light" or "dark"
+  RESULT_COUNTDOWN_SECONDS: 3,            // 결과 화면 카운트다운(초)
 };
 ```
 <!-- prettier-ignore-end -->
