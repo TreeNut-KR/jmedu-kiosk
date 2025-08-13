@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import Result from "@/components/Result";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import {
@@ -13,15 +12,20 @@ import useSerial from "@/hooks/useSerial";
 import useMultiClick from "@/hooks/useMultiClick";
 import useSerialReader from "@/hooks/useSerialReader";
 import useCheckAPIInterval from "@/hooks/useCheckAPIInterval";
-import { usePortStore, useViewStore } from "@/store";
+import { usePortStore } from "@/store";
 import { cn } from "@/utils/shadcn";
 import z from "zod/v4";
 import useFullscreen from "@/hooks/useFullscreen";
 
-export default function QRScan() {
+import { AppScreen } from "@stackflow/plugin-basic-ui";
+import { useFlow } from "@/stackflow";
+import { type ActivityComponentType, useStack } from "@stackflow/react";
+
+const QRScan: ActivityComponentType = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { setView } = useViewStore();
+  const stack = useStack();
+  const { push } = useFlow();
   const { port } = usePortStore();
   const { connect } = useSerial();
   const { theme, toggleTheme } = useTheme();
@@ -45,6 +49,7 @@ export default function QRScan() {
 
   useEffect(() => {
     const handler = async (event: Event) => {
+      if (!stack.activities[0].isActive) return;
       if (isProcessing) return;
       setIsProcessing(true);
 
@@ -85,33 +90,27 @@ export default function QRScan() {
         const parse = responseSchema.safeParse(json);
 
         if (!parse.success) {
-          setView(
-            <Result
-              type="error"
-              title="API 응답 형식이 올바르지 않습니다"
-              description="관리자에게 문의해주세요"
-            />,
-          );
+          push("Result", {
+            type: "error",
+            title: "API 응답 형식이 올바르지 않습니다",
+            description: "관리자에게 문의해주세요",
+          });
         } else {
-          setView(
-            <Result
-              type={parse.data.success ? "success" : "error"}
-              title={parse.data.message}
-              description={parse.data.description}
-            />,
-          );
+          push("Result", {
+            type: parse.data.success ? "success" : "error",
+            title: parse.data.message,
+            description: parse.data.description,
+          });
         }
       } catch (err: unknown) {
         clearTimeout(timeoutId);
         console.error("등하원 처리 실패:", err);
 
-        setView(
-          <Result
-            type="error"
-            title="등원 처리 실패"
-            description="관리자에게 문의해주세요"
-          />,
-        );
+        push("Result", {
+          type: "error",
+          title: "등원 처리 실패",
+          description: "관리자에게 문의해주세요",
+        });
       } finally {
         setIsProcessing(false);
       }
@@ -122,58 +121,71 @@ export default function QRScan() {
     return () => {
       window.removeEventListener("qrscan", handler as EventListener);
     };
-  }, [isProcessing, setView]);
+  }, [isProcessing, push, stack]);
 
   return (
-    <section className="animate-fadein bg-adaptiveGray-50 relative flex h-full w-full flex-col justify-between p-9">
-      <div
-        className={cn([
-          "absolute top-0 left-0 flex h-full w-full items-center justify-center",
-          !isProcessing && "hidden",
-        ])}
-      >
-        <div className="bg-adaptiveGray-100 absolute h-full w-full opacity-50"></div>
-        <IconLoader2
-          className="text-adaptiveBlue-500 size-18 animate-spin"
-          stroke={3}
-        />
-      </div>
-      <header className="flex flex-row items-center justify-between">
-        <Button
-          variant="ghost"
-          className="size-14"
-          onClick={handleThemeBtn}
-        ></Button>
-        <Button
-          variant="ghost"
-          className="size-14"
-          onClick={handleFullscreenBtn}
-        ></Button>
-      </header>
-      <div className="flex flex-col items-center">
-        <p className="text-center text-4xl font-semibold break-keep">
-          QR을 <span className="text-adaptiveRed-500">아래</span>에 스캔해주세요
-        </p>
-        <img className="w-full" alt="qr scan guide image" src={scanImagePath} />
-      </div>
-      <footer className="flex flex-row items-center justify-between">
-        <Button variant="ghost" className="size-14">
-          {isLoading ? (
-            <IconLoader2 className="text-adaptiveGray-400 size-8 animate-spin ease-in-out" />
-          ) : isOnline ? (
-            <IconCloud className="text-adaptiveGray-400 size-8" />
-          ) : (
-            <IconCloudOff className="text-adaptiveGray-400 size-8" />
-          )}
-        </Button>
-        <Button variant="ghost" className="size-14" onClick={handleSettingBtn}>
-          {port?.readable ? (
-            <IconQrcode className="text-adaptiveGray-400 size-8" />
-          ) : (
-            <IconQrcodeOff className="text-adaptiveGray-400 size-8" />
-          )}
-        </Button>
-      </footer>
-    </section>
+    <AppScreen backgroundColor="var(--adaptiveGray50)">
+      <section className="relative flex h-full w-full flex-col justify-between p-9">
+        <div
+          className={cn([
+            "absolute top-0 left-0 flex h-full w-full items-center justify-center",
+            !isProcessing && "hidden",
+          ])}
+        >
+          <div className="bg-adaptiveGray-100 absolute h-full w-full opacity-50"></div>
+          <IconLoader2
+            className="text-adaptiveBlue-500 size-18 animate-spin"
+            stroke={3}
+          />
+        </div>
+        <header className="flex flex-row items-center justify-between">
+          <Button
+            variant="ghost"
+            className="size-14"
+            onClick={handleThemeBtn}
+          ></Button>
+          <Button
+            variant="ghost"
+            className="size-14"
+            onClick={handleFullscreenBtn}
+          ></Button>
+        </header>
+        <div className="flex flex-col items-center">
+          <p className="text-center text-4xl font-semibold break-keep">
+            QR을 <span className="text-adaptiveRed-500">아래</span>에
+            스캔해주세요
+          </p>
+          <img
+            className="w-full"
+            alt="qr scan guide image"
+            src={scanImagePath}
+          />
+        </div>
+        <footer className="flex flex-row items-center justify-between">
+          <Button variant="ghost" className="size-14">
+            {isLoading ? (
+              <IconLoader2 className="text-adaptiveGray-400 size-8 animate-spin ease-in-out" />
+            ) : isOnline ? (
+              <IconCloud className="text-adaptiveGray-400 size-8" />
+            ) : (
+              <IconCloudOff className="text-adaptiveGray-400 size-8" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            className="size-14"
+            onClick={handleSettingBtn}
+          >
+            {port?.readable ? (
+              <IconQrcode className="text-adaptiveGray-400 size-8" />
+            ) : (
+              <IconQrcodeOff className="text-adaptiveGray-400 size-8" />
+            )}
+          </Button>
+        </footer>
+      </section>
+    </AppScreen>
   );
-}
+};
+
+export default QRScan;

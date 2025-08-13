@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
+    "@stackflow/core": "^1.2.0",
+    "@stackflow/plugin-basic-ui": "^1.14.2",
+    "@stackflow/plugin-renderer-basic": "^1.1.13",
+    "@stackflow/react": "^1.5.3",
     "@tabler/icons-react": "^3.34.0",
     "@tailwindcss/vite": "^4.1.10",
     "class-variance-authority": "^0.7.1",

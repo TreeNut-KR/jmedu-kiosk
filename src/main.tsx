@@ -2,9 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import App from "@/App.tsx";
+import "@stackflow/plugin-basic-ui/index.css";
 import "@/styles/index.css";
 
 const rootEl = document.getElementById("root")!;
+rootEl.style.position = "relative";
 rootEl.style.width = window.APP_CONFIG.WIDTH + "px";
 rootEl.style.height = window.APP_CONFIG.HEIGHT + "px";
 
