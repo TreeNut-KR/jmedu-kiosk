@@ -6,13 +6,9 @@ import "@stackflow/plugin-basic-ui/index.css";
 import "@/styles/index.css";
 
 const rootEl = document.getElementById("root")!;
-rootEl.style.position = "relative";
-rootEl.style.width = window.APP_CONFIG.WIDTH + "px";
-rootEl.style.height = window.APP_CONFIG.HEIGHT + "px";
 
 if (window.APP_CONFIG.IS_SCREEN_ROTATE) {
-  rootEl.style.transform = `rotate(-90deg) translate(-${window.APP_CONFIG.WIDTH}px)`;
-  rootEl.style.transformOrigin = "top left";
+  rootEl.classList.add("rotated");
 }
 
 createRoot(rootEl).render(
